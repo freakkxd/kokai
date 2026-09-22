@@ -1,126 +1,126 @@
-# KŌKAI — Digital Voyages
+# KŌKAI — Цифровые путешествия
 
-KŌKAI is a cinematic one-page digital experience for an independent creative studio. It presents the studio as a place "between signal and silence" — dark, editorial, film-like — and walks a visitor from intro to manifesto, selected work, method, a live signal monitor, and contact in a single scroll.
+KŌKAI — это кинематографичный одностраничный цифровой опыт для независимой креативной студии. Он представляет студию как место «между сигналом и тишиной» — тёмное, редакционное, напоминающее киноплёнку — и проводит посетителя от вступления к манифесту, избранным работам, методу, живому монитору сигнала и контактной форме в рамках одного скролл-сценария.
 
-No backend. No router. All state lives in the browser (React state + URL hash for the active voyage).
+Без бэкенда. Без роутера. Всё состояние хранится в браузере (`React state` + URL-хэш для активного путешествия).
 
-## Overview
+## Обзор
 
-**Concept:** a portfolio-as-voyage. Six stations (`index / manifesto / voyages / method / signal / contact`) form one continuous narrative: arrive, read the position, browse four works, see how the studio works, play with a living interface, then start a conversation.
+**Концепция:** портфолио-путешествие. Шесть станций (`index / manifesto / voyages / method / signal / contact`) формируют единую непрерывную историю: прибытие, знакомство с позицией студии, просмотр четырёх работ, изучение рабочего процесса, взаимодействие с живым интерфейсом и начало разговора.
 
-**Visual direction:** near-black void (`#070708`) against warm paper (`#f1eee8`), vermillion signal accents, oversized Playfair Display headlines, mono metadata labels, film grain over everything, and a large ambient orb with orbital rings behind the hero.
+**Визуальное направление:** почти чёрная пустота (`#070708`) на фоне тёплой бумаги (`#f1eee8`), акценты цвета вермильон, огромные заголовки Playfair Display, моноширинные метаданные, плёночное зерно поверх всего интерфейса и большой атмосферный шар с орбитальными кольцами за героем.
 
-**Intended user experience:** slow and deliberate. A 000→100 calibrating intro, smooth scroll between sections, motion that reacts to pointer and scroll position, and a contact flow that feels like sending a transmission. Reduced-motion users get the same content without the animation.
+**Предполагаемый пользовательский опыт:** медленный и осознанный. Вступление с калибровкой от 000 до 100, плавный скролл между секциями, анимация, реагирующая на курсор и положение прокрутки, а также контактный сценарий, ощущающийся как отправка передачи. Пользователи с включённым режимом уменьшения движения получают тот же контент без анимаций.
 
-## Features
+## Возможности
 
-- **Intro overlay with 000→100 progress:** full-screen `IntroOverlay` counts 000–100 over ~1.2s with an eased `requestAnimationFrame` loop, a `CALIBRATING THE HORIZON` bar, then slides up (`translateY(-100%)`). Reduced-motion users skip to a short fade.
-- **Fixed header and scroll-spy navigation:** `FixedHeader` stays pinned with wordmark, numbered desktop links, and an availability pill. An `IntersectionObserver` with `rootMargin: '-40% 0px -55% 0px'` tracks the visible section and highlights the active link (`aria-current="page"`).
-- **Cinematic hero:** full-viewport `#index` section with giant background `KŌKAI` word, `TOKYO — YEKATERINBURG` meta row, Playfair headline ("We build worlds between *signal* and silence"), two CTAs, and a `SCROLL TO ENTER` indicator.
-- **Canvas/WebGL-inspired ambient orb:** `AmbientOrb` renders a layered planet (CSS radial gradients + rim light + noise) with a 2D-canvas particle field (70 orbiting dots) on top. Canvas is sized with `devicePixelRatio` (capped at 2) and pauses when the hero leaves the viewport or the tab is hidden.
-- **Orbital rings:** inline SVG ellipses rotate with `orbRot` / `orbRotR` keyframes and carry `IMAGE / CODE / SOUND / MOTION` mono labels.
-- **Pointer parallax:** hero `pointermove` eases a target/actual offset (`px += (tx - px) * 0.06`) that shifts the orb center, particle drift, and highlight position (`--hx` / `--hy`).
-- **Scroll-linked motion:** `scrollY` offsets the orb stage (`translate(-50%, calc(-50% + …))`), sinks the particle center, and drives the process timeline progress plus the global page-progress rail.
-- **Word-by-word statement reveal:** the manifesto sentence ("Technology is not the spectacle. The feeling is.") splits into words; an `IntersectionObserver` (threshold 0.35) adds `.visible` and each word fades up with a 70ms stagger (`blur(8px)` → `blur(0)`).
-- **Interactive voyages selector:** left `role="listbox"` with four `role="option"` buttons (SŌMA / NAMI / KURO / HANA); click or focus selects; the right preview cross-fades (`.voyage-stage.active`). Active selection is deep-linked via `#voyage-<id>` with `history.replaceState`, and restored from `window.location.hash` on load.
-- **SŌMA, NAMI, KURO, and HANA visual previews:** pure CSS/SVG scenes — SŌMA (warm organic blobs + wave-line SVG), NAMI (horizontal flow lines + indigo blob), KURO (18 animated equalizer bars), HANA (drifting petals + botanical line SVG). Each shows keywords, subtitle, description, category/year tags, and its accent color.
-- **Keyboard navigation for voyages:** the listbox handles `ArrowDown`/`ArrowRight` (next), `ArrowUp`/`ArrowLeft` (previous, wrapping), `Enter` (announces the voyage via toast), `Escape` (blur). A hint line reads `USE ↑ ↓ TO NAVIGATE — ENTER TO OPEN`.
-- **Process timeline:** `LISTEN / FRAME / COMPOSE / RELEASE` steps beside a vertical rail; scroll position fills the vermillion progress line and activates steps (`translateX(8px)` + marker dot).
-- **Animated signal monitor:** `#signal` section with a 2D-canvas waveform (grid + glowing stroke), live `SIGNAL %` and `FREQUENCY Hz` readouts jittered on an 80ms interval, and pointer-driven distortion (`distort.current` bends the wave near the cursor).
-- **AMBIENT, TENSION, and RESONANCE modes:** segmented `aria-pressed` buttons switch `SIGNAL_CONF` — ambient (432Hz / 68% / LISTENING / mist-blue), tension (587Hz / 86% / HEIGHTENED / vermillion), resonance (528Hz / 77% / ALIGNED / green). Each mode changes color, wave speed/amplitude/jag, and status label.
-- **Pause/resume signal behavior:** `Pause signal` / `Resume signal` toggle (`aria-pressed`) freezes the tick interval and waveform advance, removes glow (`shadowBlur = 0`), and flips status to `PAUSED`.
-- **Contact modal:** `ContactModal` (`role="dialog" aria-modal="true"`) with name, email, project kind, budget pills, and details fields. Opens from hero or contact section, locks body scroll, focuses the name field, closes on backdrop click, Cancel, or Escape, and returns focus to the trigger.
-- **Client-side form validation:** on submit, name ≥ 2 chars, email regex (`^[^\s@]+@[^\s@]+\.[^\s@]+$`), details ≥ 10 chars. Errors render inline with `aria-invalid`, `aria-describedby`, and `role="alert"`. `noValidate` disables native bubbles so the custom messages are the source of truth.
-- **Success state:** valid submit swaps the form for `TRANSMISSION COMPLETE / Message received`, fires a toast, and resets the fields on close.
-- **Mobile navigation overlay:** under 900px the desktop nav hides and a `MENU` pill opens a full-screen dialog (`#nav-overlay`) with staggered Playfair links, focus moved inside, Tab focus-trapped, and Escape/body-lock handling.
-- **Custom cursor on pointer devices:** after the intro, `CustomCursor` shows a vermillion dot + trailing ring + mode label (`MOVE / ENTER / OPEN / CLOSE`). It lerps (`0.16` / `0.1`) via `requestAnimationFrame`, reads the nearest `[data-cursor]` ancestor, hides on `pointer: coarse`, and applies `body.fine-pointer * { cursor: none }` only on fine pointers.
-- **Fixed progress rail:** right-edge `nav[aria-label="Page progress"]` with six numbered buttons and a vermillion fill whose height grows with page scroll (`140 + progress * 120` px). Hidden on mobile.
-- **Grain overlay:** fixed full-screen `div.grain-overlay` with an inline SVG `feTurbulence` data-URI, `opacity: 0.035`, `mix-blend-mode: screen`, `pointer-events: none`.
-- **Reduced-motion support:** `useReducedMotion()` mirrors `prefers-reduced-motion`, toggles `body.reduce-motion`, short-circuits the intro, freezes particle drift/wave advance/orbit rotation, and CSS `@media (prefers-reduced-motion: reduce)` plus `body.reduce-motion` rules collapse all transitions/animations and force `.word-reveal` / `.reveal` visible.
-- **Responsive layout:** fluid `clamp()` type, `--pad-x` / `--max-w` tokens, tablet range (768–1199px) narrows grids and orb, ≤900px swaps to the menu button, ≤767px stacks all grids to one column, docks the orb inline at 300px, and hides the rail and orbit labels.
-- **Accessibility behavior:** skip link, semantic landmarks (`header / nav / main / section / footer`), labelled sections, listbox/option semantics with `aria-activedescendant`, dialog semantics with focus management, labelled form fields with error associations, `aria-live` regions for preview/monitor/toasts, `focus-visible` outlines, 44px+ touch targets, and touch-safe pointer handlers (`pointermove` with coarse-pointer guards).
+- **Вступительный оверлей с прогрессом 000→100:** полноэкранный `IntroOverlay` считает значения от 000 до 100 примерно за 1,2 секунды с помощью сглаженного цикла `requestAnimationFrame`, отображает полосу `CALIBRATING THE HORIZON`, а затем уезжает вверх (`translateY(-100%)`). Пользователи с уменьшенным движением сразу переходят к короткому затуханию.
+- **Фиксированная шапка и навигация по скроллу:** `FixedHeader` остаётся закреплённым, содержит вордмарк, пронумерованные ссылки для десктопа и индикатор доступности. `IntersectionObserver` с `rootMargin: '-40% 0px -55% 0px'` отслеживает видимую секцию и подсвечивает активную ссылку (`aria-current="page"`).
+- **Кинематографичный герой:** полноэкранная секция `#index` с огромным фоновой надписью `KŌKAI`, строкой метаданных `TOKYO — YEKATERINBURG`, заголовком Playfair («We build worlds between *signal* and silence»), двумя CTA-кнопками и индикатором `SCROLL TO ENTER`.
+- **Атмосферный шар на Canvas/WebGL-подобной основе:** `AmbientOrb` отрисовывает многослойную планету с помощью CSS-радиальных градиентов, подсветки по краю и шума, а поверх неё — поле из 70 частиц на 2D-canvas. Canvas масштабируется с учётом `devicePixelRatio` с ограничением до 2 и приостанавливается, когда герой выходит из области видимости или вкладка становится скрытой.
+- **Орбитальные кольца:** встроенные SVG-эллипсы вращаются с помощью keyframes `orbRot` / `orbRotR` и содержат моноширинные подписи `IMAGE / CODE / SOUND / MOTION`.
+- **Параллакс от курсора:** `pointermove` героя плавно приближает целевое и текущее смещение (`px += (tx - px) * 0.06`), сдвигает центр шара и движение частиц, а также изменяет положение подсветки (`--hx` / `--hy`).
+- **Анимация, связанная со скроллом:** `scrollY` смещает сцену шара (`translate(-50%, calc(-50% + …))`), опускает центр частиц и управляет прогрессом таймлайна процесса и общей полосой прогресса страницы.
+- **Покомпонентное появление манифеста:** предложение манифеста («Technology is not the spectacle. The feeling is.») разбивается на слова. `IntersectionObserver` с threshold `0.35` добавляет класс `.visible`, а каждое слово появляется с задержкой 70 мс и переходит от `blur(8px)` к `blur(0)`.
+- **Интерактивный селектор путешествий:** слева находится `role="listbox"` с четырьмя кнопками `role="option"` — SŌMA / NAMI / KURO / HANA. Клик или фокус выбирает вариант; правая превью-сцена плавно меняется через `.voyage-stage.active`. Активный вариант сохраняется в URL через `#voyage-<id>` с помощью `history.replaceState` и восстанавливается из `window.location.hash` при загрузке.
+- **Визуальные превью SŌMA, NAMI, KURO и HANA:** чистые CSS/SVG-сцены — SŌMA с тёплыми органическими формами и SVG-линейной волной, NAMI с горизонтальными потоковыми линиями и индиговой формой, KURO с 18 анимированными полосами эквалайзера, HANA с парящими лепестками и ботаническим линейным SVG. Каждая сцена отображает ключевые слова, подзаголовок, описание, категорию, год и собственный акцентный цвет.
+- **Клавиатурная навигация по путешествиям:** listbox обрабатывает `ArrowDown` / `ArrowRight` для перехода вперёд, `ArrowUp` / `ArrowLeft` для перехода назад с зацикливанием, `Enter` для объявления текущего путешествия через toast и `Escape` для снятия фокуса. Подсказка сообщает: `USE ↑ ↓ TO NAVIGATE — ENTER TO OPEN`.
+- **Таймлайн процесса:** этапы `LISTEN / FRAME / COMPOSE / RELEASE` отображаются рядом с вертикальной направляющей. Положение скролла заполняет вермильоновую линию прогресса и активирует этапы (`translateX(8px)` + точка-маркер).
+- **Анимированный монитор сигнала:** секция `#signal` содержит 2D-canvas с сеткой и светящейся линией осциллограммы, живые показатели `SIGNAL %` и `FREQUENCY Hz`, которые изменяются с интервалом 80 мс, а также искажение волны под курсором (`distort.current`).
+- **Режимы AMBIENT, TENSION и RESONANCE:** сегментированные кнопки с `aria-pressed` переключают `SIGNAL_CONF`: ambient — 432 Гц / 68% / LISTENING / туманно-синий; tension — 587 Гц / 86% / HEIGHTENED / вермильоновый; resonance — 528 Гц / 77% / ALIGNED / зелёный. Каждый режим изменяет цвет, скорость, амплитуду и неровность волны, а также статус.
+- **Пауза и возобновление сигнала:** кнопка `Pause signal` / `Resume signal` переключает `aria-pressed`, замораживает интервал и движение волны, убирает свечение (`shadowBlur = 0`) и меняет статус на `PAUSED`.
+- **Контактное модальное окно:** `ContactModal` (`role="dialog" aria-modal="true"`) содержит поля имени, электронной почты, типа проекта, варианты бюджета и подробности. Окно открывается из героя или контактной секции, блокирует прокрутку страницы, переводит фокус на поле имени, закрывается кликом по фону, кнопкой Cancel или клавишей Escape и возвращает фокус на элемент, открывший окно.
+- **Клиентская валидация формы:** при отправке проверяется имя длиной не менее двух символов, email по регулярному выражению (`^[^\s@]+@[^\s@]+\.[^\s@]+$`) и описание длиной не менее 10 символов. Ошибки отображаются рядом с полями с помощью `aria-invalid`, `aria-describedby` и `role="alert"`. Атрибут `noValidate` отключает встроенные браузерные подсказки, поэтому источником сообщений остаётся собственная валидация.
+- **Состояние успешной отправки:** после корректной отправки форма заменяется на `TRANSMISSION COMPLETE / Message received`, показывается toast, а поля сбрасываются при закрытии.
+- **Мобильный навигационный оверлей:** при ширине менее 900px десктопная навигация скрывается, а кнопка `MENU` открывает полноэкранный диалог (`#nav-overlay`) с последовательным появлением ссылок Playfair, переносом фокуса внутрь, ловушкой Tab, обработкой Escape и блокировкой прокрутки.
+- **Кастомный курсор на устройствах с указателем:** после вступления `CustomCursor` показывает вермильоновую точку, следующее кольцо и метку режима (`MOVE / ENTER / OPEN / CLOSE`). Курсор плавно перемещается через `requestAnimationFrame` с коэффициентами `0.16` / `0.1`, определяет ближайшего родителя `[data-cursor]`, скрывается на устройствах с `pointer: coarse` и применяет `body.fine-pointer * { cursor: none }` только для точных указателей.
+- **Фиксированная полоса прогресса:** расположенный у правого края `nav[aria-label="Page progress"]` содержит шесть пронумерованных кнопок. Вермильоновая заливка увеличивается с высотой `140 + progress * 120` px. На мобильных устройствах rail скрывается.
+- **Оверлей с зерном:** фиксированный полноэкранный `div.grain-overlay` использует встроенный SVG `feTurbulence` в data-URI, `opacity: 0.035`, `mix-blend-mode: screen` и `pointer-events: none`.
+- **Поддержка уменьшенного движения:** `useReducedMotion()` отслеживает `prefers-reduced-motion`, переключает класс `body.reduce-motion`, сокращает вступление, останавливает движение частиц, волн и орбит, а CSS-правила `@media (prefers-reduced-motion: reduce)` и `body.reduce-motion` отключают переходы и анимации и принудительно показывают `.word-reveal` / `.reveal`.
+- **Адаптивная вёрстка:** используются плавные размеры через `clamp()`, токены `--pad-x` / `--max-w`, диапазон для планшетов `768–1199px` с более узкими сетками и уменьшенным шаром, при ширине ≤900px десктопная навигация заменяется кнопкой меню, при ширине ≤767px все сетки становятся одноколоночными, шар перемещается внутрь страницы с размером 300px, а подписи орбит и rail скрываются.
+- **Доступность:** skip link, семантические landmarks (`header / nav / main / section / footer`), секции с подписями, семантика listbox/option с `aria-activedescendant`, семантика диалогов и управление фокусом, подписанные поля форм с ассоциациями ошибок, `aria-live` для превью, монитора и toast-сообщений, обводка `focus-visible`, области касания размером от 44px и обработчики указателя, безопасные для touch-устройств (`pointermove` с проверкой coarse-pointer).
 
-## Tech Stack
+## Технологический стек
 
-What is actually in this repo (see `package.json`, `src/`, `index.html`):
+Что фактически находится в репозитории (см. `package.json`, `src/`, `index.html`):
 
-- **React 18.3.1** (`react`, `react-dom`) — all UI is function components + hooks (`useState`, `useEffect`, `useMemo`, `useRef`, `useCallback`). Entry is `src/main.tsx` with `React.StrictMode`.
-- **TypeScript 5.5.3** — strict mode (`strict: true`, `noFallthroughCasesInSwitch`), `jsx: react-jsx`, `noEmit`. Union types model voyages, signal modes, and section ids.
-- **Vite 5.4.0** (`vite`, `@vitejs/plugin-react`) — dev server on `:5173`, production bundling, `vite-env.d.ts` references `vite/client`.
-- **CSS (no framework)** — one hand-written stylesheet (`src/index.css`, ~340 lines): custom properties, flex/grid layouts, keyframes, responsive queries, reduced-motion overrides. No Tailwind, no component library, no chart library.
-- **Canvas 2D** — `canvas.getContext('2d')` in two places: hero particle orb and signal waveform monitor. No WebGL, no Three.js.
-- **SVG** — orbital rings/labels, SŌMA wave paths, HANA botanical drawing, and film-grain `feTurbulence` data-URIs. All inline or CSS-embedded.
-- **IntersectionObserver** — hero visibility gating, statement word-reveal, generic `useReveal`, footer giant-word reveal, and global scroll-spy.
-- **requestAnimationFrame** — intro counter easing, orb particle loop, signal waveform loop, custom-cursor lerp loop. Intervals (`80ms` signal tick, toast auto-dismiss) complement it; there is no audio.
-- **Browser-local state only** — React state + `window.location.hash` (`#voyage-<id>`) persisted via `history.replaceState`. No backend, no fetch, no router, no `localStorage`.
-- **Google Fonts** — `@import` in `src/index.css`: `DM Mono` (labels/meta), `Manrope` (body/UI), `Playfair Display` (editorial headlines), with system-font fallbacks.
+- **React 18.3.1** (`react`, `react-dom`) — весь интерфейс состоит из функциональных компонентов и хуков (`useState`, `useEffect`, `useMemo`, `useRef`, `useCallback`). Точка входа — `src/main.tsx`, используется `React.StrictMode`.
+- **TypeScript 5.5.3** — строгий режим (`strict: true`, `noFallthroughCasesInSwitch`), `jsx: react-jsx`, `noEmit`. Union-типы описывают путешествия, режимы сигнала и идентификаторы секций.
+- **Vite 5.4.0** (`vite`, `@vitejs/plugin-react`) — dev-сервер на порту `:5173`, production-бандлинг и предпросмотр.
+- **CSS без фреймворка** — один написанный вручную stylesheet (`src/index.css`, примерно 340 строк): CSS-переменные, flex/grid-разметка, keyframes, адаптивные запросы и правила для уменьшенного движения. Tailwind, UI-библиотеки и библиотеки графиков не используются.
+- **Canvas 2D** — `canvas.getContext('2d')` используется в двух местах: для частиц атмосферного шара и для осциллограммы монитора сигнала. WebGL, Three.js и другие 3D-библиотеки не используются.
+- **SVG** — орбитальные кольца и подписи, волновые пути SŌMA, ботаническая графика HANA и data-URI `feTurbulence` для плёночного зерна. Всё встроено в HTML или CSS.
+- **IntersectionObserver** — используется для контроля видимости героя, появления слов манифеста, универсального `useReveal`, появления огромного слова в футере и глобального отслеживания активной секции.
+- **requestAnimationFrame** — используется для счётчика вступления, цикла частиц шара, анимации осциллограммы и плавного движения кастомного курсора. Интервалы (`80ms` для обновления сигнала и автоматическое скрытие toast) дополняют их. Аудио отсутствует.
+- **Локальное состояние в браузере** — React state + `window.location.hash` (`#voyage-<id>`) для сохранения выбранного путешествия. Бэкенд, fetch, роутер и `localStorage` не используются.
+- **Google Fonts** — в `src/index.css` подключены через `@import`: `DM Mono` для меток и метаданных, `Manrope` для основного текста и UI, `Playfair Display` для редакционных заголовков с системными fallback-шрифтами.
 
-## Project Structure
+## Структура проекта
 
-Real layout of this repository:
+Реальная структура этого репозитория:
 
 ```text
 KŌKAI/
-├── index.html          # HTML shell: <div id="root">, module script to /src/main.tsx, meta + title
-├── package.json        # name, scripts (dev/build/preview/typecheck/lint), react + vite deps
-├── package-lock.json   # locked dependency tree
-├── tsconfig.json       # strict TS config, jsx react-jsx, include: ["src"]
-├── vite.config.ts      # vite + @vitejs/plugin-react, dev server port 5173
-├── .gitignore          # node_modules, dist/build, logs, env/secrets, editor/OS, caches
-├── README.md           # this file
-├── dist/               # generated by `npm run build` (ignored by git, not committed)
+├── index.html          # HTML-оболочка: <div id="root">, module script для /src/main.tsx, meta + title
+├── package.json        # скрипты и зависимости
+├── package-lock.json   # зафиксированное дерево зависимостей
+├── tsconfig.json       # настройки строгого TypeScript, jsx react-jsx, include: ["src"]
+├── vite.config.ts      # Vite + @vitejs/plugin-react, dev-сервер на порту 5173
+├── .gitignore          # node_modules, dist/build, логи, env/секреты, настройки редакторов и ОС, кэши
+├── README.md           # этот файл
+├── dist/               # результат npm run build (игнорируется git, не коммитится)
 └── src/
-    ├── App.tsx         # the entire experience: all sections, overlays, modal, cursor, toasts
-    ├── main.tsx        # React entry: createRoot + StrictMode + index.css import
-    ├── index.css       # design system + all component/section/responsive/motion styles
-    └── vite-env.d.ts   # vite client types reference
+    ├── App.tsx         # всё приложение: секции, оверлеи, модальное окно, курсор, toast-сообщения
+    ├── main.tsx        # React entry: createRoot + StrictMode + импорт index.css
+    ├── index.css       # дизайн-система + все стили компонентов, секций, адаптива и анимаций
+    └── vite-env.d.ts   # ссылка на типы vite/client
 ```
 
-- **`src/App.tsx`** (~937 lines): single-file app. Defines `VoyageId / SignalMode / SectionId` types, `VOYAGES / NAV / RAIL / STEPS / SIGNAL_CONF` data, hooks (`useReducedMotion`, `useReveal`, `scrollToId`), and components (`IntroOverlay`, `FixedHeader`, `AmbientOrb`, `HeroSection`, `StatementSection`, `VoyagePreview`, `VoyagesSection`, `ProcessSection`, `SignalSection`, `ContactModal`, `ContactSection`, `Footer`, `ProgressRail`, `NavigationOverlay`, `CustomCursor`, `ToastLayer`, `GrainOverlay`) composed by `App` with scroll-spy, page progress, voyage state, menu/modal state, and toasts.
-- **`src/index.css`**: design tokens + every visual rule (intro, header, hero, orb, statement, voyages, process, signal, contact, footer, rail, overlay, modal, cursor, toasts, reveal helpers, responsive, reduced motion).
-- **`index.html`**: minimal shell; the app mounts into `#root`.
-- **`package.json`**: scripts and dependency manifest (see Installation / Verification).
-- **`dist/`**: production output (`index.html` + hashed `assets/`) created by `vite build`. It is git-ignored and never committed here.
+- `src/App.tsx` — примерно 937 строк. Здесь определены типы `VoyageId / SignalMode / SectionId`, данные `VOYAGES / NAV / RAIL / STEPS / SIGNAL_CONF`, хуки (`useReducedMotion`, `useReveal`, `scrollToId`) и компоненты (`IntroOverlay`, `FixedHeader`, `AmbientOrb`, `HeroSection`, `StatementSection`, `VoyagePreview`, `VoyagesSection`, `ProcessSection`, `SignalSection`, `ContactModal`, `ContactSection`, `Footer`, `ProgressRail`, `NavigationOverlay`, `CustomCursor`, `ToastLayer`, `GrainOverlay`). Все они собираются в `App`, где также управляются отслеживание секции, прогресс страницы, состояние путешествия, меню, модального окна и toast-сообщений.
+- `src/index.css` — дизайн-токены и все визуальные правила для вступления, шапки, героя, шара, манифеста, путешествий, процесса, сигнала, контактов, футера, rail, оверлеев, модального окна, курсора, toast-сообщений, reveal-хелперов, адаптива и уменьшенного движения.
+- `index.html` — минимальная HTML-оболочка; приложение монтируется в `#root`.
+- `package.json` — манифест зависимостей и скриптов.
+- `dist/` — production-вывод (`index.html` + хешированные `assets/`), создаваемый через `vite build`. Папка игнорируется git и не входит в репозиторий.
 
-There is no `public/` directory in this snapshot; static assets are inline (SVG data-URIs) or loaded from Google Fonts CDN.
+В этом снимке репозитория нет директории `public/`; статические ресурсы встроены непосредственно в SVG, CSS data-URI или загружаются из CDN Google Fonts.
 
-## Installation
+## Установка
 
-Prerequisites: Node.js 18+ and npm.
+Требования: Node.js 18+ и npm.
 
 ```bash
 npm install
 ```
 
-## Development
+## Разработка
 
 ```bash
 npm run dev
 ```
 
-Starts the Vite dev server (configured port **5173**):
+Запускает dev-сервер Vite, настроенный на порт **5173**:
 
 ```text
 http://localhost:5173/
 ```
 
-Hot reload is on. The active voyage deep-link (`#voyage-soma`, `#voyage-nami`, …) survives reloads.
+Включена горячая перезагрузка. Deep-link активного путешествия (`#voyage-soma`, `#voyage-nami` и другие) сохраняется после перезагрузки.
 
-## Production Build
+## Production-сборка
 
 ```bash
 npm run build
 ```
 
-Runs `tsc --noEmit && vite build`. Output goes to `dist/` (clean static files ready to serve: `dist/index.html` plus hashed JS/CSS in `dist/assets/`). Preview it locally with:
+Команда выполняет `tsc --noEmit && vite build`. Результат помещается в `dist/` — это готовые статические файлы: `dist/index.html` и хешированные JS/CSS-файлы в `dist/assets/`. Для локального предпросмотра используется:
 
 ```bash
 npm run preview
 ```
 
-## Verification
+## Проверка
 
-All three commands exist in `package.json` and pass on a clean checkout:
+Все три команды существуют в `package.json` и проходят на чистом клоне:
 
 ```bash
 npm run typecheck
@@ -128,51 +128,57 @@ npm run lint
 npm run build
 ```
 
-- `typecheck` → `tsc --noEmit`
-- `lint` → `tsc --noEmit` (type-level lint; no ESLint config in this repo)
-- `build` → `tsc --noEmit && vite build`
+- `typecheck` → `tsc --noEmit`.
+- `lint` → `tsc --noEmit` — типовая проверка, отдельной конфигурации ESLint в репозитории нет.
+- `build` → `tsc --noEmit && vite build`.
 
-## Interaction Guide
+## Руководство по взаимодействию
 
-- **Desktop navigation:** click a numbered header link (Index / Voyages / Method / Signal / Contact) to smooth-scroll; the active section glows vermillion in the header and the right progress rail.
-- **Mobile menu:** tap `MENU` (visible ≤900px) → full-screen overlay → tap a large link to jump; `CLOSE ✕` or `Escape` dismisses. Focus is trapped while open.
-- **Voyage selector:** click (or Tab-focus) a `SŌMA / NAMI / KURO / HANA` row to swap the preview panel. The URL updates to `#voyage-<id>`; sharing that URL restores the same voyage.
-- **Voyage keyboard controls:** focus the voyage list, then `↑`/`↓` (or `←`/`→`) to cycle with wrap-around, `Enter` to announce the current voyage as a toast, `Escape` to leave the list.
-- **Signal modes:** press `AMBIENT` / `TENSION` / `RESONANCE` to retune frequency, signal %, status word, wave color/speed/shape. Each switch fires a toast (`Signal mode — <mode>`).
-- **Pause/resume:** press `Pause signal` to freeze the waveform and readouts (`STATUS: PAUSED`); press `Resume signal` to restart. Moving the pointer across the waveform bends it while active.
-- **Contact form:** press `Begin a conversation` (hero or contact section) → fill name / email / kind / budget / details → `Send inquiry`. Inline errors explain fixes; valid submit shows `TRANSMISSION COMPLETE` with a `Close` button.
-- **Escape key:** closes the topmost layer — contact modal first, then mobile menu. The voyage list uses `Escape` to blur instead.
-- **Reduced-motion behavior:** with `prefers-reduced-motion: reduce`, the intro shortens, orb/wave/cursor animation halts, orbit SVG rotation stops, scroll becomes instant (`scroll-behavior: auto`), and all reveals render in their final state.
+- **Десктопная навигация:** нажмите на пронумерованную ссылку в шапке — Index / Voyages / Method / Signal / Contact — чтобы плавно прокрутить страницу. Активная секция подсвечивается вермильоновым цветом в шапке и на правой полосе прогресса.
+- **Мобильное меню:** нажмите `MENU` — кнопка видна при ширине ≤900px — затем выберите большую ссылку в полноэкранном оверлее. Закрыть его можно через `CLOSE ✕` или Escape.
+- **Селектор путешествий:** нажмите или перейдите Tab к строке `SŌMA / NAMI / KURO / HANA`, чтобы заменить превью. URL обновится до `#voyage-<id>`, а при открытии этой ссылки выбранное путешествие восстановится.
+- **Клавиатурное управление путешествиями:** установите фокус на список путешествий, затем используйте `↑` / `↓` или `←` / `→` для циклического переключения, `Enter` — чтобы объявить текущее путешествие через toast, `Escape` — чтобы покинуть список.
+- **Режимы сигнала:** нажмите `AMBIENT`, `TENSION` или `RESONANCE`, чтобы изменить частоту, процент сигнала, статус, цвет, скорость и форму волны. Каждое переключение показывает toast `Signal mode — <mode>`.
+- **Пауза и возобновление:** нажмите `Pause signal`, чтобы заморозить осциллограмму и показатели (`STATUS: PAUSED`), или `Resume signal`, чтобы продолжить работу.
+- **Контактная форма:** нажмите `Begin a conversation` в герое или контактной секции, заполните имя, email, тип проекта, бюджет и подробности, затем нажмите `Send inquiry`. Встроенные ошибки объясняют, что нужно исправить; после корректной отправки появляется `TRANSMISSION COMPLETE`.
+- **Escape:** закрывает самый верхний активный слой — сначала контактное модальное окно, затем мобильное меню. В списке путешествий Escape снимает фокус.
+- **Уменьшенное движение:** при включённом `prefers-reduced-motion` вступление сокращается, анимации шара, волны и курсора останавливаются, вращение SVG-орбит отключается, прокрутка становится мгновенной (`scroll-behavior: auto`), а все reveal-элементы сразу отображаются в финальном состоянии.
 
-## Design System
+## Дизайн-система
 
-- **Primary colors:** `--void #070708` (page), `--void-soft #0d0d10` (signal section), `--ink #111116` (preview base), `--paper #f1eee8` (light text / contact paper), `--paper-muted #b7b2aa`, `--paper-dim #77736d`, `--vermillion #e65d3c` (signal/CTA/active), `--vermillion-soft #ff8b68`, `--indigo #6f76ba` (NAMI), `--mist-blue #8da9c7` (ambient mode), `--gold #c8a36a`, `--success #b7e58a` (resonance/available). Voyage accents: SŌMA `#e65d3c`, NAMI `#6f76ba`, KURO `#8da9c7`, HANA `#b7e58a`.
-- **Typography:** `Manrope` — body, UI, wordmark; `Playfair Display` — hero, statement, section, preview, overlay, contact, footer headlines; `DM Mono` — all labels, meta, counts, timeline indices, monitor readouts, rail, toasts. Headlines use `clamp()` fluid sizes (e.g. hero `2.6rem → 5.2rem`).
-- **Easing:** `--ease-main: cubic-bezier(0.16, 1, 0.3, 1)` (hovers, reveals, modal, toasts), `--ease-slow: cubic-bezier(0.22, 1, 0.36, 1)` (scroll cue, giant footer word). Intro exit is `transform .9s var(--ease-main)`.
-- **Responsive breakpoints:** `768–1199px` tablet (tighter padding, narrower grids, smaller orb); `≤900px` menu swap (desktop nav off, `MENU` pill on, availability text hidden); `≤767px` mobile (single-column grids, inline 300px orb, hidden rail, reduced section padding). Base tokens: `--header-h: 84px` (68px mobile), `--pad-x: 48px` (32px tablet, 20px mobile), `--max-w: 1440px`.
-- **Visual principles:** darkness with one warm light; hairline borders (`rgba(241,238,232,.08/.16)`); pill buttons and 2–6px cards; generous whitespace (120px section padding, 80px mobile); motion always eased and interruptible; grain unifies every surface; 44px minimum touch targets.
+- **Основные цвета:** `--void #070708` — страница; `--void-soft #0d0d10` — секция сигнала; `--ink #111116` — базовый цвет превью; `--paper #f1eee8` — светлый текст и контактная секция; `--paper-muted #b7b2aa`; `--paper-dim #77736d`; `--vermillion #e65d3c` — сигнал, CTA и активные элементы; `--vermillion-soft #ff8b68`; `--indigo #6f76ba` — NAMI; `--mist-blue #8da9c7` — режим ambient; `--gold #c8a36a`; `--success #b7e58a` — resonance и доступность.
 
-## Accessibility
+- **Акценты путешествий:** SŌMA — `#e65d3c`, NAMI — `#6f76ba`, KURO — `#8da9c7`, HANA — `#b7e58a`.
 
-- **Semantic landmarks:** `header`, `nav` (primary / menu / footer / progress), `main#main`, labelled `section`s, `footer`, plus a `Skip to content` link.
-- **Keyboard navigation:** all actions are native buttons/links; voyage listbox supports arrows + Enter + Escape; Tab order is logical; mobile overlay traps Tab while open.
-- **Focus handling:** `:focus-visible` vermillion outline; modal moves focus to the first field and returns it to the trigger on close; menu moves focus inside; `aria-activedescendant` tracks the voyage option.
-- **Labels:** icon-only or terse controls carry `aria-label`s (wordmark, availability, menu, cursor-agnostic CTAs, dismiss buttons); form fields use real `<label>`s; budget pills and mode buttons use `aria-pressed`; decorative layers use `aria-hidden`.
-- **Dialog semantics:** both overlays use `role="dialog" aria-modal="true"` with labelled titles; backdrop click and `Escape` dismiss; body scroll locks (`body.locked`) while open.
-- **Reduced motion:** `prefers-reduced-motion` media query + `body.reduce-motion` class + `useReducedMotion()` hook gate every animation loop and reveal; content never depends on motion to be readable.
-- **Touch behavior:** 44px+ targets, `pointer: coarse` disables the custom cursor and restores native cursors, pointer handlers are passive where possible, layouts collapse to single column with no horizontal scroll (`overflow-x: hidden`).
+- **Типографика:** `Manrope` используется для основного текста и UI, `Playfair Display` — для героя, манифеста, заголовков секций, превью, оверлея, контактной формы и футера, `DM Mono` — для меток, метаданных, счётчиков, индексов таймлайна, показателей монитора, rail и toast-сообщений. Заголовки используют адаптивные размеры через `clamp()` — например, размер героя от `2.6rem` до `5.2rem`.
 
-## Deployment
+- **Кривые сглаживания:** `--ease-main: cubic-bezier(0.16, 1, 0.3, 1)` используется для hover-эффектов, появления элементов, модального окна и toast-сообщений. `--ease-slow: cubic-bezier(0.22, 1, 0.36, 1)` применяется для индикатора прокрутки и огромного слова в футере. Выход вступления выполняется через `transform .9s var(--ease-main)`.
 
-`npm run build` emits plain static files, so any static host works. No server config is required.
+- **Адаптивные точки:** диапазон планшетов — `768–1199px`, где используются более плотные отступы, узкие сетки и уменьшенный шар; при ширине ≤900px десктопная навигация скрывается и появляется кнопка меню; при ширине ≤767px все сетки становятся одноколоночными, шар перемещается внутрь страницы и получает размер 300px, а rail и подписи орбит скрываются.
 
-- **GitHub Pages:** build, then serve `dist/` (e.g. via the `peaceiris/actions-gh-pages` action or `gh-pages` branch). For a project site, set Vite `base` to `/<repo>/` if assets 404.
-- **Vercel:** import the repo, framework preset `Vite`, build command `npm run build`, output dir `dist`.
-- **Netlify:** build command `npm run build`, publish directory `dist`. No functions or redirects needed.
-- **Any static host:** upload `dist/` to Cloudflare Pages, S3 + CloudFront, nginx, etc. and serve `index.html` for `/`.
+- **Визуальные принципы:** тьма с одним тёплым источником света; тонкие границы (`rgba(241,238,232,.08/.16)`); pill-кнопки и карточки с радиусом 2–6px; много свободного пространства — 120px между секциями и 80px на мобильных; анимации всегда сглаженные и прерываемые; минимальный размер touch-областей — 44px.
 
-No deployment config is committed here — add only what your chosen host needs.
+## Доступность
 
-## License
+- **Семантические landmarks:** `header`, `nav`, `main#main`, секции с подписями, `footer`, а также ссылка `Skip to content`.
+- **Клавиатурная навигация:** все действия выполняются нативными кнопками и ссылками; listbox путешествий поддерживает стрелки, Enter и Escape; порядок Tab логичен; мобильный оверлей удерживает фокус внутри себя.
+- **Управление фокусом:** используется обводка `:focus-visible` вермильонового цвета; модальное окно переводит фокус на первое поле и возвращает его триггеру после закрытия; меню переводит фокус внутрь.
+- **Подписи:** кнопки с иконками и короткими подписями имеют `aria-label`; поля форм используют настоящие `<label>`; кнопки бюджета и режимов используют `aria-pressed`.
+- **Семантика диалогов:** оба оверлея используют `role="dialog" aria-modal="true"`, поддерживают заголовки, закрытие по клику на фон и Escape, а также блокировку прокрутки через `body.locked`.
+- **Уменьшенное движение:** media query `prefers-reduced-motion` и класс `body.reduce-motion` отключают все циклы анимаций и делают контент доступным без движения.
+- **Touch-поведение:** области взаимодействия имеют размер от 44px, на устройствах с `pointer: coarse` кастомный курсор отключается, а нативные курсоры восстанавливаются. Обработчики указателя используют проверки coarse-pointer, а мобильная разметка превращается в одноколоночную без горизонтального скролла (`overflow-x: hidden`).
 
-Personal/portfolio work — all rights reserved unless a `LICENSE` file is added later. Contact the studio before reusing the design, copy, or code.
+## Деплой
+
+`npm run build` создаёт обычные статические файлы, поэтому подойдёт любой статический хостинг. Специальная серверная конфигурация не требуется.
+
+- **GitHub Pages:** выполните сборку и отдайте содержимое `dist/`, например через action `peaceiris/actions-gh-pages` или ветку `gh-pages`. Для project site установите `base` в Vite равным `/<repo>/`, если ресурсы возвращают ошибку 404.
+- **Vercel:** импортируйте репозиторий, выберите пресет Vite, команду сборки `npm run build` и директорию вывода `dist`.
+- **Netlify:** команда сборки — `npm run build`, публикуемая директория — `dist`. Functions и redirects не требуются.
+- **Любой статический хостинг:** загрузите `dist/` на Cloudflare Pages, S3 + CloudFront, nginx или другой статический сервер и отдавайте `index.html` для `/`.
+
+Конфигурация деплоя не добавлена в репозиторий — добавьте только файлы, необходимые для выбранного хостинга.
+
+## Лицензия
+
+Личный проект для портфолио — все права защищены, если позже не будет добавлен файл `LICENSE`. Перед повторным использованием дизайна, текста или кода свяжитесь со студией.
